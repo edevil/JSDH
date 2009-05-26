@@ -1,0 +1,1 @@
+Small example using Diffie-Hellman to establish a secure key and AES with that key to exchange the secure data.

@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <title>
+      Diffie-Hellman key exchange server side
+    </title>
+    <script type="text/javascript" src="/media/aes.js"></script>
+    <script type="text/javascript" src="http://js.sapo.pt/Prototype/"></script>
+  </head>
+  <body>
+    Encrypted password = {{ ciphertext }}<br/>
+    Computed shared key = {{ K }}<br/>
+    Decrypting password...
+    <span id="cleartext"> </span><br/>
+
+    <a href="{% url jsdh.views.index %}">go back</a>
+    
+    <script type="text/javascript">    
+      // <![CDATA[
+      Event.observe(document, "dom:loaded", function() {
+          var password = AESDecryptCtr('{{ ciphertext }}', '{{ K }}', 256);          
+          $('cleartext').innerHTML = password;
+        });        
+      // ]]>
+      </script>
+      </body>
+</html>

@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <title>
+      Diffie-Hellman key exchange
+    </title>
+    <script type="text/javascript" src="/media/libbigint.js"></script>
+    <script type="text/javascript" src="/media/aes.js"></script>
+    <script type="text/javascript" src="http://js.sapo.pt/Prototype/"></script>
+  </head>
+  <body>
+    A public/private key pair is being generated
+    <span id="dh_benchmark"> </span>
+      <form name="dh_form" method="post" action="{% url jsdh.views.finish_dh %}" onSubmit="return submit_form()">
+        <input type="hidden" name="B" value="" />
+        <input type="hidden" name="session_key" value="{{ session_key }}" />
+        <input type="text" name="password" value="" />
+        <input type="submit" name="do_calc" value="Send password" style="display: none;" />
+      </form>
+      <script type="text/javascript">
+      
+      var K = "";
+      var base = 10;
+      
+      function bigPowMod(a, b, c) {
+        a = str2bigInt(a, base);
+        b = str2bigInt(b, base);
+        c = str2bigInt(c, base);
+        var result = powMod(a, b, c);
+        result = bigInt2str(result, base);
+        return result;
+      }
+      
+      function randomInt(bits) {
+        var result = randBigInt(bits);
+        return bigInt2str(result, base);
+      }
+      
+      // <![CDATA[
+      Event.observe(document, "dom:loaded", function() {
+          // server's public key
+          var A = '{{ A }}';
+          
+          // Our prime number as a base for operations.
+          var dh_prime = '{{ p }}';
+
+          // g, a primitive root used as an exponent
+          // (2 and 5 are acceptable, but BigInt is faster with odd numbers)
+          var dh_g = '{{ g }}';
+          
+          var time_start = new Date();
+          var b = randomInt(256);
+          var B = bigPowMod(dh_g, b, dh_prime);
+          K = bigPowMod(A, b, dh_prime);
+          if ( window.console )
+          {
+            if ( typeof(window.console.info) == 'function' )
+            {
+              window.console.info('Public key: ' + B);
+              window.console.info('Secret: ' + K);
+            }
+          }
+          var time_end = new Date();
+          var time_total = time_end.getTime() - time_start.getTime();
+          $('dh_benchmark').innerHTML = '..complete. Time: ' + time_total + 'ms';
+          
+          // stick it in the form
+          var frm = document.forms['dh_form'];
+          frm.B.value = B;
+          frm.do_calc.style.display = 'inline';
+        });
+        
+        function submit_form() {
+            var frm = document.forms['dh_form'];
+            // encrypt password and insert in form
+            var password = frm.password.value;
+            var ciphertext = AESEncryptCtr(password, K, 256);
+            frm.password.value = ciphertext;
+            return true;
+        }
+      // ]]>
+      </script>
+      </body>
+</html>
